@@ -1,0 +1,85 @@
+#!/usr/bin/python
+author__ = 'Robbie Barrat'
+
+import tweepy, time, re
+
+CONSUMER_KEY = ''
+CONSUMER_SECRET = ''
+ACCESS_KEY = ''
+ACCESS_SECRET =  ''
+
+auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+api = tweepy.API(auth)
+
+keywords = [
+    "rt to", "rt and win", "retweet and win",
+    "rt for", "rt 4", "retweet to", "rt", "win", "gana", "sorteo"
+]
+
+bannedwords = [
+    "vote"
+]
+
+def search(twts):
+    for i in twts:
+        if not any(k in i.text.lower() for k in keywords) or any(k in i.text.lower() for k in bannedwords):
+            continue
+        try:
+            api.retweet(i.id)
+            api.create_favorite(i.id)
+            #api.create_friendship(i)
+            api.create_friendship(i.user_id)
+
+            print "############################\nRETWEETED  FAVORITED\n************************\n" + (i.text)
+        except:
+            print "You've probably already retweeted this."
+
+        # Follows
+            # This part follows the actual contest-holder, instead of some random person who retweeted their contest
+
+            tweet = i.text
+
+            if tweet[0:3] == "RT ":
+               tweet = tweet[3:]
+
+               if tweet[0] == "@":
+                   #for a in tweet:
+                    #   print (a)+"PRUEBA"
+                    #print (spliti[0])
+                   splittext = (tweet).split(":")
+                   username = str(splittext[0]).replace("@", "")
+                   api.create_friendship(username)
+                   print (splittext)
+                   print "############################\nJUST FOLLOWED " + (username)
+                   print "############################"
+                   print (tweet)
+                   print "############################"
+                   #print (splittext[1])
+                   palabras=(splittext[1])
+                   buscar=(palabras).split()
+                   for a in buscar:
+                       if "@" in a:
+                       #if a == "@":
+                           seguir=(a).replace("@", "")
+                           api.create_friendship(seguir)
+                           print "############################\nJUST FOLLOWED BUSCADO TWTS" + (seguir)
+                           continue
+
+        # This part waits a minute before moving onto the next one.
+        time.sleep(30)
+
+
+def run():
+    for key in ["retweet to win", "retweet y gana", "sorteo rt", "RT to win" ]:
+        print "************************"
+        print "\n...Refreshing searched tweets...\n"
+        print "************************"
+        search(api.search(q=key))
+        next
+
+
+if __name__ == '__main__':
+
+    while True:
+        run()
